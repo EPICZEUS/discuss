@@ -1,20 +1,18 @@
 class User < ApplicationRecord
+	has_secure_password
+	
 	validates :username, presence: true, uniqueness: true
-	validates :first_name, presence: true
-	validates :last_name, presence: true
+
 	before_validation :defaults
 	
-	has_many :user_rooms
-	has_many :rooms, through: :user_rooms
+	has_many :owned_rooms, class_name: "Room", inverse_of: "owner"
+	has_and_belongs_to_many :rooms
 	has_many :messages
 
-	has_secure_password
-
-	def full_name
-		"#{self.first_name} #{self.last_name}"
-	end
-
 	def defaults
+		self.first_name ||= ""
+		self.last_name ||= ""
+
 		self.first_name.capitalize!
 		self.last_name.capitalize!
 

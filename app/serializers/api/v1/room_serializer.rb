@@ -1,5 +1,5 @@
 class Api::V1::RoomSerializer < ActiveModel::Serializer
-  attributes :id, :name
+  attributes :id, :name, :owner
 
   has_many :users
   has_many :messages

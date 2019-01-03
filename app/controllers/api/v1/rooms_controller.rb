@@ -6,9 +6,9 @@ class Api::V1::RoomsController < ApplicationController
 	end
 
 	def create
-		@room = Room.create(name: room_params[:name])
+		@room = Room.create(name: params[:name])
 
-		user = User.find(room_params[:owner_id])
+		user = User.find(params[:owner_id])
 
 		@room.users << user
 		@room.owner = user
@@ -16,7 +16,7 @@ class Api::V1::RoomsController < ApplicationController
 		@room.save
 
 		if @room.valid?
-			ActionCable.server.broadcast "list", {type: "roomCreate", room: @room}
+			ActionCable.server.broadcast "list", type: "roomCreate", room: @room
 			render json: @room
 		else
 			render json: {
@@ -33,16 +33,12 @@ class Api::V1::RoomsController < ApplicationController
 	def destroy
 		@room.destroy
 
-		ActionCable.server.broadcast "room-#{params[:id]}", {type: "roomDelete"}
-		ActionCable.server.broadcast "list", {type: "roomDelete", id: params[:id]}
+		ActionCable.server.broadcast "room-#{params[:id]}", type: "roomDelete"
+		ActionCable.server.broadcast "list", type: "roomDelete", id: params[:id]
 	end
 
 	private
 	def find_room
 		@room = Room.find(params[:id])
-	end
-
-	def room_params
-		ActionController::Parameters.new(JSON.parse(request.body.string)).permit(:owner_id, :name)
 	end
 end

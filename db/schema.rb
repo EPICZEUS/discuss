@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_02_144219) do
+ActiveRecord::Schema.define(version: 2019_01_03_194411) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 2019_01_02_144219) do
     t.string "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "likes", default: 0, null: false
     t.index ["room_id"], name: "index_messages_on_room_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
@@ -50,6 +51,8 @@ ActiveRecord::Schema.define(version: 2019_01_02_144219) do
     t.datetime "updated_at", null: false
     t.string "img_url"
     t.string "password_digest"
+    t.integer "current_room"
+    t.string "status"
   end
 
   add_foreign_key "messages", "rooms"

@@ -19,12 +19,12 @@ class Api::V1::UsersController < ApplicationController
 	end
 
 	def update
-		if @user.authenticate(user_params[:password])
-			if @user.update(user_update_params)
+		if @user.authenticate(request.headers["Authorization"])
+			if @user.update(user_params)
 				render json: @user
 
 				@user.rooms.each do |room|
-					ActionCable.server.broadcast "room-#{room.id}", {type: "userUpdate", user: @user}
+					ActionCable.server.broadcast "room-#{room.id}", type: "userUpdate", user: @user
 				end
 			else
 				render json: {
@@ -35,26 +35,29 @@ class Api::V1::UsersController < ApplicationController
 		else
 			render json: {
 				error: true,
-				status: 403
+				status: 401,
+				messages: ["Unauthorized"]
 			}
 		end
 	end
 
 	def login
-		@user = User.find_by(username: request.headers["username"])
+		username, password = request.headers["Authorization"].split(":")
+
+		@user = User.find_by(username: username)
 
 		if !@user
 			render json: {
 				status: 404
 			}
-		elsif @user.authenticate(request.headers["password"])
+		elsif @user.authenticate(password)
 			render json: {
 				status: 200,
 				id: @user.id
 			}
 		else
 			render json: {
-				status: 403
+				status: 401
 			}
 		end
 	end
@@ -66,10 +69,6 @@ class Api::V1::UsersController < ApplicationController
 	end
 
 	def user_params
-		ActionController::Parameters.new(JSON.parse(request.body.string)).permit(:username, :password, :img_url, :first_name, :last_name)
-	end
-
-	def user_update_params
-		ActionController::Parameters.new(JSON.parse(request.body.string)).permit(:username, :img_url, :first_name, :last_name)
+		params.permit(:username, :password, :img_url, :first_name, :last_name)
 	end
 end

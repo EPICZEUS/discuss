@@ -7,7 +7,7 @@ class Api::V1::Rooms::MessagesController < ApplicationController
 		@message.room = Room.find(params[:room_id])
 
 		if @message.save
-			ActionCable.server.broadcast "room-#{@message.room.id}", {type: "message", message: @message}
+			ActionCable.server.broadcast "room-#{@message.room.id}", type: "message", message: @message
 			render json: {}
 		else
 			render json: {
@@ -23,7 +23,7 @@ class Api::V1::Rooms::MessagesController < ApplicationController
 
 	def update
 		if @message.update(message_params)
-			ActionCable.server.broadcast "room-#{@message.room.id}", {type: "messageEdit", content: @message.content, id: @message.id}
+			ActionCable.server.broadcast "room-#{@message.room.id}", type: "messageUpdate", message: @message
 			render json: {}
 		else
 			render json: {
@@ -34,7 +34,6 @@ class Api::V1::Rooms::MessagesController < ApplicationController
 	end
 
 	def destroy
-		byebug
 		@message.destroy
 	end
 
@@ -45,6 +44,6 @@ class Api::V1::Rooms::MessagesController < ApplicationController
 	end
 
 	def message_params
-		ActionController::Parameters.new(JSON.parse(request.body.string)).permit(:content, :room_id, :user_id)
+		params.permit(:content, :room_id, :user_id, :likes)
 	end
 end
